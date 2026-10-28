@@ -147,6 +147,16 @@ class ProtocolDefinitionControllerTest {
     }
 
     @Test
+    void getById_malformedUuid_returns400NotServerError() throws Exception {
+        // CCE-152: a non-UUID path segment used to fall through to the 500 catch-all.
+        mockMvc.perform(get("/v1/protocol/protocol-definitions/{id}", "abc123"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("id: invalid UUID 'abc123'"));
+
+        verifyNoInteractions(protocolDefinitionService);
+    }
+
+    @Test
     void getById_notFound_returns404() throws Exception {
         when(protocolDefinitionService.findById(PROTOCOL_ID))
                 .thenThrow(new EntityNotFoundException("Protocol definition not found: " + PROTOCOL_ID));
